@@ -1,6 +1,7 @@
 --------------------- Variables Used ----------------------------------
-local tentcreated, benchcreated, campfirecreated, storagechestcreated, hitchpostcreated, fasttravelpostcreated = false, false, false, false, false, false
-local hitchpost, tent, bench, campfire, storagechest, fasttravelpost, broll, blip, outoftown
+local tentcreated, benchcreated, campfirecreated, storagechestcreated, hitchpostcreated, fasttravelpostcreated,polecreated = false,
+    false, false, false, false, false,false
+local hitchpost, tent, bench, campfire, storagechest, fasttravelpost, broll,pole, blip, outoftown
 
 ------- Event To Register Inv After Char Selection ------
 RegisterNetEvent('vorp:SelectedCharacter')
@@ -10,29 +11,27 @@ AddEventHandler('vorp:SelectedCharacter', function(charid)
 end)
 
 ---------------------- Prop Spawning -----------------------------------
-function spawnTent(model)
+function spawnPole(campname)
+    local model = GetHashKey('mp001_s_mpcorona01x')
     local infrontofplayer = IsThereAnyPropInFrontOfPed(PlayerPedId())
-    if infrontofplayer or tentcreated then
+    if infrontofplayer or polecreated then
         VORPcore.NotifyRightTip(_U('CantBuild'), 4000)
     else
         progressbarfunc(Config.SetupTime.TentSetuptime, _U('SettingTentPbar'))
-        local model2 = 'p_bedrollopen01x'
         modelload(model)
-        modelload(model2)
         --TentSpawn
-        local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
-        tent = CreateObject(model, x, y, z, true, true, false)
-        PropCorrection(tent)
-        tentcreated = true
-        broll = CreateObject(model2, x,y,z, true, true, false)
-        PropCorrection(broll)
-        SetEntityHeading(broll, GetEntityHeading(broll) + 90) --this sets the beroll properly headed
+        local x, y, z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
+        pole = CreateObject(model, x, y, z, true, true, false)
+        PropCorrection(pole)
+        polecreated = true
         if Config.CampBlips.enable then
             blip = BccUtils.Blips:SetBlip(Config.CampBlips.BlipName, Config.CampBlips.BlipHash, 0.2, x, y, z)
         end
-        while DoesEntityExist(tent) do
+		exports['bcc-posse']:CreatePosseExport(campname)
+
+        while DoesEntityExist(pole) do
             Wait(5)
-            local x2,y2,z2 = table.unpack(GetEntityCoords(PlayerPedId()))
+            local x2, y2, z2 = table.unpack(GetEntityCoords(PlayerPedId()))
             local dist = GetDistanceBetweenCoords(x, y, z, x2, y2, z2, true)
             if dist < 2 then
                 BccUtils.Misc.DrawText3D(x, y, z, _U('OpenCampMenu'))
@@ -46,10 +45,31 @@ function spawnTent(model)
     end
 end
 
+
+function spawnTent(model)
+    local infrontofplayer = IsThereAnyPropInFrontOfPed(PlayerPedId())
+    if infrontofplayer or tentcreated then
+        VORPcore.NotifyRightTip(_U('CantBuild'), 4000)
+    else
+        progressbarfunc(Config.SetupTime.TentSetuptime, _U('SettingTentPbar'))
+        local model2 = 'p_bedrollopen01x'
+        modelload(model)
+        modelload(model2)
+        --TentSpawn
+        local x, y, z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
+        tent = CreateObject(model, x, y, z, true, true, false)
+        PropCorrection(tent)
+        tentcreated = true
+        broll = CreateObject(model2, x, y, z, true, true, false)
+        PropCorrection(broll)
+        SetEntityHeading(broll, GetEntityHeading(broll) + 90) --this sets the beroll properly headed
+    end
+end
+
 function spawnItem(furntype, model)
     local infrontofplayer = IsThereAnyPropInFrontOfPed(PlayerPedId())
     local notneartent = notneartentdistcheck(tent)
-    local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
+    local x, y, z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
     if infrontofplayer or notneartent then
         VORPcore.NotifyRightTip(_U('CantBuild'), 4000)
     else
@@ -74,7 +94,7 @@ function spawnItem(furntype, model)
             end
             while DoesEntityExist(campfire) do
                 Wait(5)
-                local x2,y2,z2 = table.unpack(GetEntityCoords(PlayerPedId()))
+                local x2, y2, z2 = table.unpack(GetEntityCoords(PlayerPedId()))
                 local dist = GetDistanceBetweenCoords(x, y, z, x2, y2, z2, true)
                 if dist < 2 then
                     BccUtils.Misc.DrawText3D(x, y, z, _U('RemoveFire'))
@@ -98,7 +118,6 @@ function spawnItem(furntype, model)
     end
 end
 
-
 function spawnStorageChest(model)
     local infrontofplayer = IsThereAnyPropInFrontOfPed(PlayerPedId())
     local notneartent = notneartentdistcheck(tent)
@@ -107,13 +126,13 @@ function spawnStorageChest(model)
     else
         progressbarfunc(Config.SetupTime.StorageChestTime, _U('StorageChestSetup'))
         modelload(model)
-        local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
+        local x, y, z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
         storagechest = CreateObject(model, x, y, z, true, true, false)
         PropCorrection(storagechest)
         storagechestcreated = true
         while DoesEntityExist(storagechest) do
             Wait(10)
-            local x2,y2,z2 = table.unpack(GetEntityCoords(PlayerPedId()))
+            local x2, y2, z2 = table.unpack(GetEntityCoords(PlayerPedId()))
             local dist = GetDistanceBetweenCoords(x, y, z, x2, y2, z2, true)
             if dist < 2 then
                 BccUtils.Misc.DrawText3D(x, y, z - 1, _U('OpenCampStorage'))
@@ -136,13 +155,13 @@ function spawnFastTravelPost()
         progressbarfunc(Config.SetupTime.FastTravelPostTime, _U('FastTravelPostSetup'))
         local model = 'mp001_s_fasttravelmarker01x'
         modelload(model)
-        local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
+        local x, y, z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, 0))
         fasttravelpost = CreateObject(model, x, y, z, true, true, false)
         PropCorrection(fasttravelpost)
         fasttravelpostcreated = true
         while DoesEntityExist(fasttravelpost) do
             Wait(5)
-            local x2,y2,z2 = table.unpack(GetEntityCoords(PlayerPedId()))
+            local x2, y2, z2 = table.unpack(GetEntityCoords(PlayerPedId()))
             local dist = GetDistanceBetweenCoords(x, y, z, x2, y2, z2, true)
             if dist < 2 then
                 BccUtils.Misc.DrawText3D(x, y, z, _U('OpenFastTravel'))
@@ -155,8 +174,6 @@ function spawnFastTravelPost()
         end
     end
 end
-
-
 
 ------------------Player Left Handler--------------------
 --Event to detect if player leaves
@@ -196,7 +213,6 @@ function delcamp()
     end
 end
 
-
 -- Command Setup
 CreateThread(function()
     if Config.CampCommand then
@@ -207,6 +223,7 @@ CreateThread(function()
 end)
 
 ----------------------- Distance Check for player to town coordinates --------------------------------
+local cdown = false
 RegisterNetEvent('bcc-camp:NearTownCheck')
 AddEventHandler('bcc-camp:NearTownCheck', function()
     if not Config.SetCampInTowns then
@@ -222,12 +239,28 @@ AddEventHandler('bcc-camp:NearTownCheck', function()
                 outoftown = true
             else
                 VORPcore.NotifyRightTip(_U('Tooclosetotown'), 4000)
-                outoftown = false break
+                outoftown = false
+                break
             end
         end
     end
     if outoftown then
-        MainTentmenu()
+        if Config.Cooldown then
+            if not cdown then
+                if Config.CampItem.enabled then
+                    TriggerServerEvent('bcc-camp:RemoveCampItem')
+                end
+                cdown = true
+                TriggerInput('Create', 'Name of Camp', 'Setup')
+            else
+                VORPcore.NotifyRightTip(_U('Cdown'), 4000)
+            end
+        else
+            if Config.CampItem.enabled then
+                TriggerServerEvent('bcc-camp:RemoveCampItem')
+            end
+            TriggerInput('Create', 'Name of Camp', 'Setup')
+        end
     end
 end)
 ----------------------------------- Delete camp fire -----------------------

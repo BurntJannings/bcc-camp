@@ -1,106 +1,71 @@
---------------- Pulling Menu Api ----------------------------------
-TriggerEvent("menuapi:getData", function(call)
-    MenuData = call
-end)
+FeatherMenu = exports['feather-menu'].initiate()
 
-
------------- Events for cleanup ---------------
-
---this is used to close the menu while you are on the main menu and hit backspace button
-local inmenu = false
-AddEventHandler('bcc-camp:MenuClose', function()
-    while true do --loops will run permantely
-        Wait(10) --waits 10ms prevents crashing
-        if IsControlJustReleased(0, 0x156F7119) then --if backspace is pressed then
-            if inmenu then --if var is true then
-                inmenu = false --resets var
-                MenuData.CloseAll() --closes all menus
-            end
-        end
-    end
-end)
-
+local MyMenu = FeatherMenu:RegisterMenu('feather:character:menu', {
+    top = '40%',
+    left = '20%',
+    ['720width'] = '500px',
+    ['1080width'] = '600px',
+    ['2kwidth'] = '700px',
+    ['4kwidth'] = '900px',
+    style = {},
+    contentslot = {
+        style = { --This style is what is currently making the content slot scoped and scrollable. If you delete this, it will make the content height dynamic to its inner content.
+            ['width'] = '500px',
+            ['height'] = '500px',
+            ['min-height'] = '300px'
+        }
+    },
+    draggable = true,
+    canclose = true
+})
 
 ---------------------- Main Camp Menu Setup -----------------------------------
-local cdown = false
-function MainTentmenu() --when triggered will open the main menu
-    inmenu = true --changes var to true allowing the press of backspace to close the menu
-    TriggerEvent('bcc-camp:MenuClose') --triggers the event
-    MenuData.CloseAll() --closes all menus
-    local elements = { --sets the main 3 elements up
-        { label = _U('SetTent'), value = 'settent', desc = _U('SetTent_desc') }
-    }
-    MenuData.Open('default', GetCurrentResourceName(), 'menuapi', --opens the menu
-        {
-            title = _U('MenuName'), --sets the title
-            align = 'top-left', --aligns it too left side of screen
-            elements = elements, --sets the elemnts
-        },
-        function(data) --creates a function with data as a var
-            if data.current == "backup" then
-                _G[data.trigger]()
-            end
-            if data.current.value == 'settent' then --if option clicked is this then
-                MenuData.CloseAll()
-                if Config.Cooldown then
-                    if not cdown then
-                        if Config.CampItem.enabled then
-                            TriggerServerEvent('bcc-camp:RemoveCampItem')
-                        end
-                        cdown = true
-                        FurnMenu('tent')
-                    else
-                        VORPcore.NotifyRightTip(_U('Cdown'), 4000)
-                    end
-                else
-                    if Config.CampItem.enabled then
-                        TriggerServerEvent('bcc-camp:RemoveCampItem')
-                    end
-                    FurnMenu('tent')
-                end
-            end
-        end)
-end
 
-function MainCampmenu() --when triggered will open the main menu
-    inmenu = true --changes var to true allowing the press of backspace to close the menu
-    TriggerEvent('bcc-camp:MenuClose') --triggers the event
-    MenuData.CloseAll() --closes all menus
-    local elements = { --sets the main 3 elements up
-        { label = _U('DestroyCamp'), value = 'destroycamp', desc = _U('DestroyCamp_desc') },
-        { label = _U('SetFire'), value = 'setcfire', desc = _U('SetFire_desc') },
-        { label = _U('SetBench'), value = 'setcbench', desc = _U('SetBench_desc') },
-        { label = _U('SetStorageChest'), value = 'setcstoragechest', desc = _U('SetStorageChest_desc') },
-        { label = _U('SetHitchPost'), value = 'setchitchingpost', desc = _U('SetHitchPost_desc') },
-        { label = _U('SetupFTravelPost'), value = 'setcftravelpost', desc = _U('SetupFTravelPost_desc') },
+function MainCampmenu()                --when triggered will open the main menu
+    local MyFirstPage = MyMenu:RegisterPage('first:page')
+    MyFirstPage:RegisterElement('header', {
+        value = _U('MenuName'),
+        slot = "header",
+        style = {}
+    })
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "header",
+        style = {}
+   })
+    local elements = {                 --sets the main 3 elements up
+    _U('DestroyCamp'),
+    _U('SetFire'),
+    _U('SetBench'),
+    _U('SetStorageChest'),
+    _U('SetHitchPost'),
+    _U('SetupFTravelPost')
     }
-    MenuData.Open('default', GetCurrentResourceName(), 'menuapi', --opens the menu
-        {
-            title = _U('MenuName'), --sets the title
-            align = 'top-left', --aligns it too left side of screen
-            elements = elements, --sets the elemnts
-        },
-        function(data) --creates a function with data as a var
-            if data.current == "backup" then
-                _G[data.trigger]()
-            end
-            if data.current.value == 'destroycamp' then
-                MenuData.CloseAll()
+
+    for f,v in pairs(elements) do
+        MyFirstPage:RegisterElement('button', {
+            label = v,
+            style = {       
+            ['background-color'] = '#E8E8E8',
+             ['color'] = 'white',
+             ['border-radius'] = '6px',
+            }
+    
+        }, function(data)
+            -- This gets triggered whenever the button is clicked
+            print(v)
+
+            MyMenu:Close({})
+            if v == _U('DestroyCamp') then
                 delcamp()
-            elseif data.current.value == 'setcfire' then --if option clicked is this then
-                MenuData.CloseAll()
+            elseif v ==  _U('SetFire') then --if option clicked is this then
                 FurnMenu('campfire')
-            elseif data.current.value == 'setcbench' then
-                MenuData.CloseAll()
+            elseif v ==  _U('SetBench') then
                 FurnMenu('bench')
-            elseif data.current.value == 'setcstoragechest' then
-                MenuData.CloseAll()
+            elseif v ==  _U('SetStorageChest') then
                 FurnMenu('storagechest')
-            elseif data.current.value == 'setchitchingpost' then
-                MenuData.CloseAll()
+            elseif v ==  _U('SetHitchPost') then
                 FurnMenu('hitchingpost')
-            elseif data.current.value == 'setcftravelpost' then
-                MenuData.CloseAll()
+            elseif v ==  _U('SetupFTravelPost') then
                 if Config.FastTravel.enabled then
                     spawnFastTravelPost()
                 else
@@ -108,124 +73,245 @@ function MainCampmenu() --when triggered will open the main menu
                 end
             end
         end)
+        MyFirstPage:RegisterElement('line', {
+            slot = "content",
+            style = {}
+        })
+    end
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "footer",
+        style = {}
+   })
+    MyMenu:Open({
+        cursorFocus = true,
+        menuFocus = true,
+       startupPage = MyFirstPage,
+   })
 end
 
-function Tpmenu() --when triggered will open the main menu
-    inmenu = true --changes var to true allowing the press of backspace to close the menu
-    TriggerEvent('bcc-camp:MenuClose') --triggers the event
-    MenuData.CloseAll() --closes all menus
-    local elements, elementindex = {}, 1
-    Wait(100) --waits 100ms
+function Tpmenu()                                     --when triggered will open the main menu
+    local MyFirstPage = MyMenu:RegisterPage('first:page')
+    MyFirstPage:RegisterElement('header', {
+        value = _U('FastTravelMenuName'),
+        slot = "header",
+        style = {}
+    })
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "header",
+        style = {}
+   })
     for k, v in pairs(Config.FastTravel.Locations) do --opens a for loop
-        elements[elementindex] = { --sets the elemnents to this table
+        MyFirstPage:RegisterElement('button', {
             label = v.name,
-            value = 'tp' .. tostring(elementindex), --sets the value
-            desc = _U('TpDesc') .. v.name, --empty desc
-            info = v.coords
-        }
-        elementindex = elementindex + 1 --adds 1 to the var
-    end
-    MenuData.Open('default', GetCurrentResourceName(), 'menuapi', {
-        title = _U('FastTravelMenuName'),
-        align = 'top-left',
-        elements = elements,
-        lastmenu = "MainMenu"
-    },
-        function(data)
-            if (data.current == "backup") then
-                _G[data.trigger]()
-            else
-                MenuData.CloseAll()
-                local coords = data.current.info
-                SetEntityCoords(PlayerPedId(), coords.x, coords.y, coords.z)
-            end
+            style = {},
+    
+        }, function(data)
+            -- This gets triggered whenever the button is clicked
+            MyMenu:Close({})
+            SetEntityCoords(PlayerPedId(), v.coords.x, v.coords.y, v.coords.z)
         end)
+    end
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "footer",
+        style = {}
+   })
+    MyMenu:Open({
+        cursorFocus = true,
+        menuFocus = true,
+       startupPage = MyFirstPage,
+   })
 end
 
 -- Furniture Menu Setup
 function FurnMenu(furntype)
-    local elements = {}
-    local elementindex = 1
-    local lastmen
+    local MyFirstPage = MyMenu:RegisterPage('first:page')
+    MyFirstPage:RegisterElement('header', {
+        value = _U('FurnMenu'),
+        slot = "header",
+        style = {}
+    })
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "header",
+        style = {}
+   })
     if furntype == 'tent' then
         for k, v in pairs(Config.Furniture.Tent) do
-            elements[elementindex] = {
+            MyFirstPage:RegisterElement('button', {
                 label = v.name,
-                value = 'settent' .. tostring(elementindex),
-                desc = _U('SetTent_desc'),
-                info = v.hash
-            }
-            elementindex = elementindex + 1
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnTent(model)
+            end)
+        end
+    elseif furntype == 'pole' then
+        for k, v in pairs(Config.Furniture.Benchs) do
+            MyFirstPage:RegisterElement('button', {
+                label = v.name,
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnPole(model)
+            end)
         end
     elseif furntype == 'bench' then
         for k, v in pairs(Config.Furniture.Benchs) do
-            elements[elementindex] = {
+            MyFirstPage:RegisterElement('button', {
                 label = v.name,
-                value = 'settent' .. tostring(elementindex),
-                desc = _U('SetBench_desc'),
-                info = v.hash
-            }
-            elementindex = elementindex + 1
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnItem('bench', model)
+            end)
         end
     elseif furntype == 'hitchingpost' then
         for k, v in pairs(Config.Furniture.HitchingPost) do
-            elements[elementindex] = {
+            MyFirstPage:RegisterElement('button', {
                 label = v.name,
-                value = 'settent' .. tostring(elementindex),
-                desc = _U('SetHitchPost_desc'),
-                info = v.hash
-            }
-            elementindex = elementindex + 1
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnItem('hitchingpost', model)
+            end)
         end
     elseif furntype == 'campfire' then
         for k, v in pairs(Config.Furniture.Campfires) do
-            elements[elementindex] = {
+            MyFirstPage:RegisterElement('button', {
                 label = v.name,
-                value = 'settent' .. tostring(elementindex),
-                desc = _U('SetFire_desc'),
-                info = v.hash
-            }
-            elementindex = elementindex + 1
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnItem('campfire', model)
+            end)
         end
     elseif furntype == 'storagechest' then
         for k, v in pairs(Config.Furniture.StorageChest) do
-            elements[elementindex] = {
+            MyFirstPage:RegisterElement('button', {
                 label = v.name,
-                value = 'settent' .. tostring(elementindex),
-                desc = _U('SetStorageChest_desc'),
-                info = v.hash
-            }
-            elementindex = elementindex + 1
+                style = {},
+        
+            }, function(data)
+                local model = v.hash
+                -- This gets triggered whenever the button is clicked
+                MyMenu:Close({})
+                spawnItem('storagechest', model)
+            end)
         end
     end
-    if furntype == 'tent' then
-        lastmen = 'MainTentmenu'
-    else
-        lastmen = 'MainCampmenu'
-    end
-    MenuData.Open('default', GetCurrentResourceName(), 'menuapi', {
-        title = _U('FurnMenu'),
-        align = 'top-left',
-        elements = elements,
-        lastmenu = lastmen
+    MyFirstPage:RegisterElement('bottomline', {
+        slot = "footer",
+        style = {}
+   })
+    MyMenu:Open({
+        cursorFocus = true,
+        menuFocus = true,
+       startupPage = MyFirstPage,
+   })
+end
+
+local InputMenu = FeatherMenu:RegisterMenu('feather:input:menu', {
+    top = '40%',
+    left = '35%',
+    ['720width'] = '500px',
+    ['1080width'] = '600px',
+    ['2kwidth'] = '700px',
+    ['4kwidth'] = '900px',
+    style = {
+
     },
-        function(data)
-            if (data.current == "backup") then
-                _G[data.trigger]()
-            else
-                MenuData.CloseAll()
-                local model = data.current.info
-                if furntype == 'tent' then
-                    spawnTent(model)
-                elseif furntype == 'bench' then
-                    spawnItem('bench', model)
-                elseif furntype == 'hitchingpost' then
-                    spawnItem('hitchingpost', model)
-                elseif furntype == 'campfire' then
-                    spawnItem('campfire', model)
-                elseif furntype == 'storagechest' then
-                    spawnStorageChest(model)
-                end
-            end
-        end)
+    contentslot = {
+        style = { --This style is what is currently making the content slot scoped and scrollable. If you delete this, it will make the content height dynamic to its inner content.
+            ['height'] = '150px',
+            ['width'] = '400px',
+            ['min-height'] = '150px'
+        }
+    },
+    draggable = false,
+    canclose = true
+}
+)
+
+function TriggerInput(action, label1, label2)
+    local InputPage = InputMenu:RegisterPage('first:page')
+
+    local inputValue = ''
+    InputButton1 = InputPage:RegisterElement('input', {
+        label = label1,
+        placeholder = "Name!",
+        -- persist = false,
+        style = {
+
+        }
+    }, function(data)
+        -- This gets triggered whenever the input value changes
+        inputValue = data.value
+    end)
+    InputButton2 = InputPage:RegisterElement('button', {
+        label = label2,
+        style = {
+
+        },
+
+    }, function()
+        TriggerConfirmation(action,inputValue,'Yes', 'No')
+        -- This gets triggered whenever the button is clicked
+    end)
+
+    InputMenu:Open({
+
+        startupPage = InputPage,
+
+    })
+end
+
+function TriggerConfirmation(action,input, label1, label2)
+    local InputPage = InputMenu:RegisterPage('first:page')
+
+    if InputButton1 then
+        InputButton1:UnRegister()
+        InputButton2:UnRegister()
+    end
+    InputPage:RegisterElement('button', {
+        label = label1,
+        style = {
+
+        },
+
+    }, function()
+        InputMenu:Close({})
+        spawnPole(input)
+        -- This gets triggered whenever the button is clicked
+    end)
+    InputPage:RegisterElement('button', {
+        label = label2,
+        style = {
+
+        },
+
+    }, function()
+        InputMenu:Close({})
+
+
+        -- This gets triggered whenever the button is clicked
+    end)
+    InputMenu:Open({
+
+        startupPage = InputPage,
+
+    })
 end
